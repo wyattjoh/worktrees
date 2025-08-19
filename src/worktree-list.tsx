@@ -1,7 +1,32 @@
-import { ActionPanel, Action, Icon, List, showToast, Toast, Color } from "@raycast/api";
+import { ActionPanel, Action, Icon, List, showToast, Toast, Color, Keyboard } from "@raycast/api";
 import { useState, useEffect } from "react";
 import { Repository, Worktree } from "./types";
-import { listWorktrees, openInCursor } from "./utils/git";
+import { listWorktrees } from "./utils/git";
+
+function getWorktreeIcon(worktree: Worktree): Icon | string {
+  if (worktree.bare) return Icon.Folder;
+  if (worktree.locked) return Icon.Lock;
+  if (worktree.detached) return Icon.Warning;
+  return "git-branch.svg";
+}
+
+function getWorktreeIconColor(worktree: Worktree): Color | undefined {
+  if (worktree.locked) return Color.Red;
+  if (worktree.detached) return Color.Orange;
+  if (worktree.prunable) return Color.Yellow;
+  return Color.PrimaryText;
+}
+
+function getWorktreeSubtitle(worktree: Worktree): string {
+  const parts: string[] = [];
+
+  if (worktree.bare) parts.push("bare");
+  if (worktree.detached) parts.push("detached");
+  if (worktree.locked) parts.push("locked");
+  if (worktree.prunable) parts.push("prunable");
+
+  return parts.length > 0 ? `(${parts.join(", ")})` : "";
+}
 
 interface WorktreeListProps {
   repository: Repository;
@@ -34,48 +59,6 @@ export default function WorktreeList({ repository }: WorktreeListProps) {
     loadWorktrees();
   }, [repository.path]);
 
-  async function handleOpenInCursor(worktree: Worktree) {
-    try {
-      openInCursor(worktree.path);
-      await showToast({
-        style: Toast.Style.Success,
-        title: "Opened in Cursor",
-        message: `${worktree.branch || "Detached HEAD"} - ${worktree.path}`,
-      });
-    } catch (error) {
-      await showToast({
-        style: Toast.Style.Failure,
-        title: "Failed to Open in Cursor",
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  }
-
-  function getWorktreeIcon(worktree: Worktree): Icon {
-    if (worktree.bare) return Icon.Folder;
-    if (worktree.locked) return Icon.Lock;
-    if (worktree.detached) return Icon.Warning;
-    return Icon.Branch;
-  }
-
-  function getWorktreeIconColor(worktree: Worktree): Color | undefined {
-    if (worktree.locked) return Color.Red;
-    if (worktree.detached) return Color.Orange;
-    if (worktree.prunable) return Color.Yellow;
-    return undefined;
-  }
-
-  function getWorktreeSubtitle(worktree: Worktree): string {
-    const parts: string[] = [];
-
-    if (worktree.bare) parts.push("bare");
-    if (worktree.detached) parts.push("detached");
-    if (worktree.locked) parts.push("locked");
-    if (worktree.prunable) parts.push("prunable");
-
-    return parts.length > 0 ? `(${parts.join(", ")})` : "";
-  }
-
   if (error) {
     return (
       <List>
@@ -92,7 +75,7 @@ export default function WorktreeList({ repository }: WorktreeListProps) {
     >
       {worktrees.length === 0 && !isLoading ? (
         <List.EmptyView
-          icon={Icon.Branch}
+          icon="git-branch.svg"
           title="No Worktrees Found"
           description="This repository doesn't have any worktrees"
         />
@@ -114,17 +97,22 @@ export default function WorktreeList({ repository }: WorktreeListProps) {
             ]}
             actions={
               <ActionPanel>
-                <Action title="Open in Cursor" icon={Icon.Code} onAction={() => handleOpenInCursor(worktree)} />
+                <Action.OpenWith
+                  title="Open in Cursor"
+                  icon={Icon.Code}
+                  path={worktree.path}
+                  shortcut={Keyboard.Shortcut.Common.OpenWith}
+                />
                 <Action.CopyToClipboard
                   title="Copy Path"
                   content={worktree.path}
-                  shortcut={{ modifiers: ["cmd"], key: "c" }}
+                  shortcut={Keyboard.Shortcut.Common.Copy}
                 />
-                <Action.ShowInFinder path={worktree.path} shortcut={{ modifiers: ["cmd"], key: "f" }} />
+                <Action.ShowInFinder path={worktree.path} shortcut={Keyboard.Shortcut.Common.Open} />
                 <Action.CopyToClipboard
                   title="Copy Branch Name"
                   content={worktree.branch || worktree.commit}
-                  shortcut={{ modifiers: ["cmd", "shift"], key: "c" }}
+                  shortcut={Keyboard.Shortcut.Common.Copy}
                 />
               </ActionPanel>
             }

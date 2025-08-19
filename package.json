@@ -8,9 +8,9 @@
   "license": "MIT",
   "commands": [
     {
-      "name": "list-worktrees",
-      "title": "List Worktrees",
-      "description": "Browse and manage Git repositories and their worktrees",
+      "name": "list-repositories",
+      "title": "List Repositories",
+      "description": "Browse and manage Git repositories with worktrees",
       "mode": "view"
     },
     {

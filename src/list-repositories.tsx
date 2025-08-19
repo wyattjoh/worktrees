@@ -1,9 +1,8 @@
-import { ActionPanel, Action, Icon, List, showToast, Toast } from "@raycast/api";
+import { ActionPanel, Action, Icon, List, showToast, Toast, Keyboard } from "@raycast/api";
 import { useLocalStorage } from "@raycast/utils";
 import { useState, useEffect } from "react";
 import { Repository } from "./types";
 import { STORAGE_KEYS, deserializeRepositories, serializeRepositories, sortRepositoriesByName } from "./utils/storage";
-import { openInCursor } from "./utils/git";
 import WorktreeList from "./worktree-list";
 
 export default function Command() {
@@ -33,23 +32,6 @@ export default function Command() {
       await showToast({
         style: Toast.Style.Failure,
         title: "Failed to Remove Repository",
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  }
-
-  async function handleOpenInCursor(repository: Repository) {
-    try {
-      openInCursor(repository.path);
-      await showToast({
-        style: Toast.Style.Success,
-        title: "Opened in Cursor",
-        message: `${repository.name} - ${repository.path}`,
-      });
-    } catch (error) {
-      await showToast({
-        style: Toast.Style.Failure,
-        title: "Failed to Open in Cursor",
         message: error instanceof Error ? error.message : "Unknown error",
       });
     }
@@ -90,13 +72,13 @@ export default function Command() {
             <ActionPanel>
               <Action.Push
                 title="View Worktrees"
-                icon={Icon.Branch}
+                icon="git-branch.svg"
                 target={<WorktreeList repository={repository} />}
               />
-              <Action
+              <Action.OpenWith
                 title="Open in Cursor"
                 icon={Icon.Code}
-                onAction={() => handleOpenInCursor(repository)}
+                path={repository.path}
                 shortcut={{ modifiers: ["cmd"], key: "o" }}
               />
               <ActionPanel.Section>
@@ -121,7 +103,7 @@ export default function Command() {
                   icon={Icon.Trash}
                   style={Action.Style.Destructive}
                   onAction={() => handleDeleteRepository(repository)}
-                  shortcut={{ modifiers: ["cmd"], key: "delete" }}
+                  shortcut={Keyboard.Shortcut.Common.Remove}
                 />
               </ActionPanel.Section>
             </ActionPanel>

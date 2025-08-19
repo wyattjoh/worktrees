@@ -3,7 +3,8 @@ import { useLocalStorage } from "@raycast/utils";
 import { useState } from "react";
 import { Repository } from "./types";
 import { isGitRepository, getRepositoryName } from "./utils/git";
-import { generateRepositoryId, STORAGE_KEYS, serializeRepositories, deserializeRepositories } from "./utils/storage";
+import { STORAGE_KEYS, serializeRepositories, deserializeRepositories } from "./utils/storage";
+import crypto from "node:crypto";
 
 interface FormValues {
   path: string;
@@ -65,7 +66,7 @@ export default function AddRepository() {
       const repositories = deserializeRepositories(repositoriesData || "[]");
 
       const newRepository: Repository = {
-        id: generateRepositoryId(),
+        id: crypto.randomUUID(),
         name,
         path,
         addedAt: new Date(),

@@ -4,10 +4,6 @@ export const STORAGE_KEYS = {
   REPOSITORIES: "repositories",
 } as const;
 
-export function generateRepositoryId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
-
 export function serializeRepositories(repositories: Repository[]): string {
   return JSON.stringify(
     repositories.map((repo) => ({

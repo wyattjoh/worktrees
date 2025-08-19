@@ -63,7 +63,7 @@ export function listWorktrees(repositoryPath: string): GitWorktreeListOutput {
       } else if (line.startsWith("HEAD ")) {
         currentWorktree.commit = line.substring(5);
       } else if (line.startsWith("branch ")) {
-        currentWorktree.branch = line.substring(7);
+        currentWorktree.branch = line.substring(18);
       } else if (line === "bare") {
         currentWorktree.bare = true;
       } else if (line === "detached") {
@@ -89,13 +89,5 @@ export function listWorktrees(repositoryPath: string): GitWorktreeListOutput {
     };
   } catch (error) {
     throw new Error(`Failed to list worktrees: ${error instanceof Error ? error.message : "Unknown error"}`);
-  }
-}
-
-export function openInCursor(path: string): void {
-  try {
-    execSync(`cursor "${path}"`, { stdio: "ignore" });
-  } catch (error) {
-    throw new Error(`Failed to open in Cursor: ${error instanceof Error ? error.message : "Unknown error"}`);
   }
 }
